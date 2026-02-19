@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>Edu_Track CBE School System - Junior & Senior School</title>
+    <title>CBE School System - Junior & Senior School</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -973,6 +973,33 @@
 </head>
 
 <body>
+    <!-- Login Overlay -->
+    <div id="loginOverlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#1e293b,#0f172a);z-index:9999;display:flex;align-items:center;justify-content:center;">
+        <div style="background:white;padding:40px;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,0.3);text-align:center;max-width:400px;width:90%;">
+            <div style="margin-bottom:20px;">
+                <i class="fas fa-school fa-3x" style="color:#3b82f6;"></i>
+            </div>
+            <h2 style="color:#1e293b;margin-bottom:10px;">CBE School System</h2>
+            <p style="color:#64748b;margin-bottom:30px;">Enter your credentials to access</p>
+            
+            <div style="text-align:left;margin-bottom:20px;">
+                <label style="display:block;margin-bottom:5px;font-weight:600;color:#374151;">Username</label>
+                <input type="text" id="loginUsername" placeholder="Enter username" style="width:100%;padding:12px;border:2px solid #e2e8f0;border-radius:8px;font-size:1rem;box-sizing:border-box;">
+            </div>
+            
+            <div style="text-align:left;margin-bottom:25px;">
+                <label style="display:block;margin-bottom:5px;font-weight:600;color:#374151;">Password</label>
+                <input type="password" id="loginPassword" placeholder="Enter password" style="width:100%;padding:12px;border:2px solid #e2e8f0;border-radius:8px;font-size:1rem;box-sizing:border-box;">
+            </div>
+            
+            <button onclick="login()" style="width:100%;padding:14px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:white;border:none;border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer;">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </button>
+            
+            <p id="loginError" style="color:#ef4444;margin-top:15px;display:none;">Invalid username or password</p>
+        </div>
+    </div>
+
     <!-- Mobile Menu Toggle -->
     <button class="menu-toggle" onclick="toggleSidebar()">
         <i class="fas fa-bars"></i>
@@ -1013,6 +1040,9 @@
         </div>
         <div class="nav-link" onclick="showSection('settings')">
             <i class="fas fa-cog"></i> Settings
+        </div>
+        <div class="nav-link" onclick="logout()" style="background:#ef4444;color:white;margin-top:20px;">
+            <i class="fas fa-sign-out-alt"></i> Logout
         </div>
     </div>
 
@@ -1290,11 +1320,11 @@
                         </div>
                         <div class="fee-cards-grid" id="feeCardsPayment"></div>
                         <div id="selectedFeesSummary"
-                            style="margin-top:15px;padding:15px;background:#f8fafc;border-radius:8px;display:none;">
-                            <h4 style="margin-bottom:10px;">Selected Fees:</h4>
+                            style="margin-top:15px;padding:15px;background:linear-gradient(135deg,#10b981,#059669);border-radius:8px;display:none;color:white;">
+                            <h4 style="margin-bottom:10px;color:white;">Selected Fees to Pay:</h4>
                             <div id="selectedFeesList"></div>
-                            <div style="margin-top:10px;padding-top:10px;border-top:2px solid #3b82f6;">
-                                <strong>Total: KES <span id="selectedTotalAmount">0</span></strong>
+                            <div style="margin-top:10px;padding-top:10px;border-top:2px solid rgba(255,255,255,0.3);">
+                                <strong style="font-size:1.2rem;">Total Payable: KES <span id="selectedTotalAmount" style="font-size:1.4rem;">0</span></strong>
                             </div>
                         </div>
                     </div>
@@ -1321,7 +1351,7 @@
                     <div class="form-group">
                         <label>Amount to Pay (KES)</label>
                         <input type="number" id="feeAmount" placeholder="Auto-calculated from selections"
-                            onchange="updatePaymentAmount()">
+                            readonly style="background:#f0fdf4;border-color:#86efac;">
                     </div>
                     <button class="btn btn-success" onclick="recordFeePayment()">
                         <i class="fas fa-check"></i> Record Payment
@@ -2217,7 +2247,46 @@
     <script>
     // v3 - cache buster
     
-        let editingStudentId = null;
+    // Login System
+    function login() {
+        const username = document.getElementById('loginUsername').value.trim();
+        const password = document.getElementById('loginPassword').value.trim();
+        const errorMsg = document.getElementById('loginError');
+        
+        if (username === 'admin' && password === 'admin003') {
+            // Hide login overlay
+            document.getElementById('loginOverlay').style.display = 'none';
+            // Store login state
+            localStorage.setItem('isLoggedIn', 'true');
+        } else {
+            errorMsg.style.display = 'block';
+            errorMsg.textContent = 'Invalid username or password';
+        }
+    }
+    
+    // Check login on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const isLoggedIn = localStorage.getItem('isLoggedIn');
+        if (isLoggedIn === 'true') {
+            document.getElementById('loginOverlay').style.display = 'none';
+        }
+        
+        // Allow Enter key to login
+        document.getElementById('loginPassword').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') login();
+        });
+    });
+
+    // Logout function
+    function logout() {
+        localStorage.removeItem('isLoggedIn');
+        document.getElementById('loginOverlay').style.display = 'flex';
+        document.getElementById('loginUsername').value = '';
+        document.getElementById('loginPassword').value = '';
+        document.getElementById('loginError').style.display = 'none';
+    }
+
+    let editingStudentId = null;
         let students = JSON.parse(localStorage.getItem('students')) || [];
         let fees = JSON.parse(localStorage.getItem('fees')) || [];
         let assessments = JSON.parse(localStorage.getItem('assessments')) || [];
@@ -3358,14 +3427,44 @@
 
             container.innerHTML = '';
 
-            // Add individual fee items as checkboxes for multi-selection
-            studentSelectedFees.forEach(fee => {
-                // Check if this specific fee item has been partially paid
-                let paidAmount = 0;
-                if (feeRecord && feeRecord.payments) {
-                    // For now, we'll track total paid against total fee
-                }
-                
+            // Track paid fee items
+            const paidFeeIds = [];
+            if (feeRecord && feeRecord.payments) {
+                feeRecord.payments.forEach(payment => {
+                    if (payment.selectedFeeDetails) {
+                        payment.selectedFeeDetails.forEach(paidFee => {
+                            if (!paidFeeIds.includes(paidFee.id)) {
+                                paidFeeIds.push(paidFee.id);
+                            }
+                        });
+                    }
+                });
+            }
+
+            // Filter to show only unpaid fee items
+            const unpaidFees = studentSelectedFees.filter(fee => !paidFeeIds.includes(fee.id));
+
+            if (unpaidFees.length === 0) {
+                container.innerHTML = '<div style="padding:30px;text-align:center;background:#dcfce7;border-radius:8px;border:2px solid #86efac;"><p style="color:#166534;"><i class="fas fa-check-circle"></i> All fee items have been paid!</p></div>';
+                return;
+            }
+
+            // Add total display
+            const totalUnpaid = unpaidFees.reduce((sum, fee) => sum + fee.amount, 0);
+            container.innerHTML += `
+                <div style="padding:15px;margin:8px;background:linear-gradient(135deg,#10b981,#059669);border-radius:10px;color:white;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <div>
+                            <div style="font-size:0.9rem;opacity:0.9;">Total Unpaid Fees</div>
+                            <div style="font-size:1.5rem;font-weight:bold;">KES ${totalUnpaid.toLocaleString()}</div>
+                        </div>
+                        <div style="font-size:2rem;"><i class="fas fa-wallet"></i></div>
+                    </div>
+                </div>
+            `;
+
+            // Add individual fee items as checkboxes for multi-selection (only unpaid)
+            unpaidFees.forEach(fee => {
                 const card = document.createElement('div');
                 card.className = 'fee-card';
                 card.style.cssText = 'padding:15px;margin:8px;background:linear-gradient(135deg,#f8fafc,#e2e8f0);border-radius:10px;border:2px solid #e2e8f0;cursor:pointer;transition:all 0.3s;position:relative;';
@@ -3404,7 +3503,7 @@
 
             selectedPaymentFees = [];
             let total = 0;
-            let html = '<table style="width:100%;border-collapse:collapse;"><thead><tr><th style="text-align:left;padding:5px;">Fee Item</th><th style="text-align:right;padding:5px;">Amount</th></tr></thead><tbody>';
+            let html = '<table style="width:100%;border-collapse:collapse;background:white;border-radius:8px;overflow:hidden;"><thead><tr style="background:#e2e8f0;"><th style="text-align:left;padding:8px;color:#475569;">Fee Item</th><th style="text-align:right;padding:8px;color:#475569;">Amount</th></tr></thead><tbody>';
 
             selectedCards.forEach(card => {
                 const checkbox = card.querySelector('input');
@@ -3414,7 +3513,7 @@
 
                 selectedPaymentFees.push({ id, name, amount });
                 total += amount;
-                html += `<tr><td style="padding:5px;">${name}</td><td style="text-align:right;padding:5px;">KES ${amount.toLocaleString()}</td></tr>`;
+                html += `<tr><td style="padding:8px;border-bottom:1px solid #e2e8f0;color:#1e293b;">${name}</td><td style="text-align:right;padding:8px;border-bottom:1px solid #e2e8f0;color:#10b981;font-weight:600;">KES ${amount.toLocaleString()}</td></tr>`;
             });
 
             html += '</tbody></table>';
@@ -3500,6 +3599,46 @@
                 loadFeeTable();
                 loadDashboard();
 
+                document.getElementById('feeAmount').value = '';
+                document.getElementById('transactionRef').value = '';
+                document.getElementById('feeStudent').value = '';
+                document.getElementById('feeCardsPayment').innerHTML = '';
+                document.getElementById('selectedFeesSummary').style.display = 'none';
+                selectedPaymentFees = [];
+                toggleFeeForm();
+            } else {
+                // Create new fee record if doesn't exist
+                const student = students.find(s => s.id == studentId);
+                const selectedCards = selectedPaymentFees.length > 0 ? selectedPaymentFees : [];
+                const totalFee = student?.totalFee || amount;
+                
+                const newFeeRecord = {
+                    studentId: studentId,
+                    totalFee: totalFee,
+                    totalPaid: amount,
+                    balance: totalFee - amount,
+                    selectedFees: student?.selectedFees || [],
+                    payments: [{
+                        amount, date, method,
+                        cardId: selectedCards.map(f => f.id).join(','),
+                        cardName: selectedCards.length > 0 ? selectedCards.map(f => f.name).join(', ') : 'General Payment',
+                        selectedFeeDetails: selectedCards,
+                        transactionRef: ref,
+                        receipt: 'RCP' + Date.now()
+                    }]
+                };
+                
+                fees.push(newFeeRecord);
+                localStorage.setItem('fees', JSON.stringify(fees));
+                
+                showNotification('Payment recorded!', 'success');
+                addActivity(`Payment KES ${amount} for ${student.name}`);
+                
+                printFeeReceiptDirect(studentId, 0);
+                
+                loadFeeTable();
+                loadDashboard();
+                
                 document.getElementById('feeAmount').value = '';
                 document.getElementById('transactionRef').value = '';
                 document.getElementById('feeStudent').value = '';
