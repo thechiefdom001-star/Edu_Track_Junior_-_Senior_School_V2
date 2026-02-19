@@ -989,7 +989,12 @@
             
             <div style="text-align:left;margin-bottom:25px;">
                 <label style="display:block;margin-bottom:5px;font-weight:600;color:#374151;">Password</label>
-                <input type="password" id="loginPassword" placeholder="Enter password" style="width:100%;padding:12px;border:2px solid #e2e8f0;border-radius:8px;font-size:1rem;box-sizing:border-box;">
+                <div style="position:relative;">
+                    <input type="password" id="loginPassword" placeholder="Enter password" style="width:100%;padding:12px;padding-right:45px;border:2px solid #e2e8f0;border-radius:8px;font-size:1rem;box-sizing:border-box;">
+                    <button type="button" onclick="toggleLoginPassword()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#64748b;font-size:1.1rem;">
+                        <i class="fas fa-eye" id="loginPasswordToggle"></i>
+                    </button>
+                </div>
             </div>
             
             <button onclick="login()" style="width:100%;padding:14px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:white;border:none;border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer;">
@@ -2169,6 +2174,178 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Data Management -->
+            <div class="card" style="margin-top:20px;">
+                <div class="card-header" style="background:linear-gradient(135deg,#7c3aed,#5b21b6);">
+                    <i class="fas fa-database"></i> Data Management
+                    <span style="float:right;font-size:0.7rem;font-weight:normal;">Backup & Restore</span>
+                </div>
+                <div class="card-body">
+                    <p style="margin-bottom:20px;color:#64748b;padding:10px;background:#f8fafc;border-radius:6px;border-left:3px solid #7c3aed;">
+                        <i class="fas fa-info-circle"></i> Export your data for backup or import data from a previous backup. Choose to maintain (merge) or replace existing data.
+                    </p>
+                    
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:25px;">
+                        <!-- Export Section -->
+                        <div style="background:linear-gradient(135deg,#f0f9ff,#e0f2fe);padding:25px;border-radius:12px;border:1px solid #bae6fd;">
+                            <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+                                <div style="width:50px;height:50px;background:linear-gradient(135deg,#0ea5e9,#0284c7);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                                    <i class="fas fa-file-export" style="color:white;font-size:1.3rem;"></i>
+                                </div>
+                                <div>
+                                    <h3 style="margin:0;color:#0369a1;font-size:1.2rem;">Export Data</h3>
+                                    <p style="margin:2px 0 0 0;color:#0c4a6e;font-size:0.8rem;">Download a backup of your data</p>
+                                </div>
+                            </div>
+                            
+                            <div style="background:white;padding:15px;border-radius:8px;margin-bottom:15px;">
+                                <label style="display:block;font-weight:600;color:#1e293b;margin-bottom:10px;">
+                                    <i class="fas fa-check-square"></i> Select Data to Export:
+                                </label>
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px;background:#f8fafc;border-radius:4px;">
+                                        <input type="checkbox" id="exportStudents" checked style="accent-color:#0ea5e9;"> 
+                                        <span style="font-size:0.9rem;"><i class="fas fa-users"></i> Students</span>
+                                    </label>
+                                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px;background:#f8fafc;border-radius:4px;">
+                                        <input type="checkbox" id="exportFees" checked style="accent-color:#10b981;"> 
+                                        <span style="font-size:0.9rem;"><i class="fas fa-money-bill"></i> Fees</span>
+                                    </label>
+                                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px;background:#f8fafc;border-radius:4px;">
+                                        <input type="checkbox" id="exportAssessments" checked style="accent-color:#f59e0b;"> 
+                                        <span style="font-size:0.9rem;"><i class="fas fa-clipboard-list"></i> Assessments</span>
+                                    </label>
+                                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px;background:#f8fafc;border-radius:4px;">
+                                        <input type="checkbox" id="exportAttendance" checked style="accent-color:#06b6d4;"> 
+                                        <span style="font-size:0.9rem;"><i class="fas fa-calendar-check"></i> Attendance</span>
+                                    </label>
+                                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px;background:#f8fafc;border-radius:4px;grid-column:span 2;">
+                                        <input type="checkbox" id="exportSchoolInfo" checked style="accent-color:#7c3aed;"> 
+                                        <span style="font-size:0.9rem;"><i class="fas fa-cog"></i> School Info & Settings</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <button class="btn btn-primary" onclick="exportData()" style="width:100%;padding:12px;background:linear-gradient(135deg,#0ea5e9,#0284c7);border:none;">
+                                <i class="fas fa-download"></i> Download Backup File
+                            </button>
+                        </div>
+
+                        <!-- Import Section -->
+                        <div style="background:linear-gradient(135deg,#fef3c7,#fde68a);padding:25px;border-radius:12px;border:1px solid #fcd34d;">
+                            <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+                                <div style="width:50px;height:50px;background:linear-gradient(135deg,#d97706,#b45309);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                                    <i class="fas fa-file-import" style="color:white;font-size:1.3rem;"></i>
+                                </div>
+                                <div>
+                                    <h3 style="margin:0;color:#92400e;font-size:1.2rem;">Import Data</h3>
+                                    <p style="margin:2px 0 0 0;color:#78350f;font-size:0.8rem;">Restore data from a backup file</p>
+                                </div>
+                            </div>
+                            
+                            <div style="background:white;padding:15px;border-radius:8px;margin-bottom:15px;">
+                                <label style="display:block;font-weight:600;color:#1e293b;margin-bottom:8px;">
+                                    <i class="fas fa-file-upload"></i> Select Backup File:
+                                </label>
+                                <div style="border:2px dashed #d97706;border-radius:8px;padding:20px;text-align:center;background:#fffbeb;">
+                                    <i class="fas fa-cloud-upload-alt" style="font-size:2rem;color:#d97706;margin-bottom:10px;"></i>
+                                    <input type="file" id="importFile" accept=".json" style="width:100%;">
+                                </div>
+                            </div>
+                            
+                            <div style="background:white;padding:15px;border-radius:8px;margin-bottom:15px;">
+                                <label style="display:block;font-weight:600;color:#1e293b;margin-bottom:10px;">
+                                    <i class="fas fa-cog"></i> Import Mode:
+                                </label>
+                                <div style="display:flex;flex-direction:column;gap:8px;">
+                                    <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px;background:#f0fdf4;border-radius:6px;border:1px solid #bbf7d0;">
+                                        <input type="radio" name="importMode" value="merge" checked style="accent-color:#10b981;"> 
+                                        <div>
+                                            <strong style="color:#166534;"><i class="fas fa-plus-circle"></i> Merge</strong>
+                                            <span style="color:#15803d;font-size:0.8rem;display:block;">Add to existing data (keep both)</span>
+                                        </div>
+                                    </label>
+                                    <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px;background:#fef2f2;border-radius:6px;border:1px solid #fecaca;">
+                                        <input type="radio" name="importMode" value="replace" style="accent-color:#ef4444;"> 
+                                        <div>
+                                            <strong style="color:#991b1b;"><i class="fas fa-exchange-alt"></i> Replace</strong>
+                                            <span style="color:#b91c1c;font-size:0.8rem;display:block;">Overwrite all existing data</span>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div style="background:white;padding:15px;border-radius:8px;margin-bottom:15px;">
+                                <label style="display:block;font-weight:600;color:#1e293b;margin-bottom:10px;">
+                                    <i class="fas fa-check-square"></i> Select Data to Import:
+                                </label>
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px;background:#f8fafc;border-radius:4px;">
+                                        <input type="checkbox" id="importStudents" checked style="accent-color:#0ea5e9;"> 
+                                        <span style="font-size:0.9rem;"><i class="fas fa-users"></i> Students</span>
+                                    </label>
+                                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px;background:#f8fafc;border-radius:4px;">
+                                        <input type="checkbox" id="importFees" checked style="accent-color:#10b981;"> 
+                                        <span style="font-size:0.9rem;"><i class="fas fa-money-bill"></i> Fees</span>
+                                    </label>
+                                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px;background:#f8fafc;border-radius:4px;">
+                                        <input type="checkbox" id="importAssessments" checked style="accent-color:#f59e0b;"> 
+                                        <span style="font-size:0.9rem;"><i class="fas fa-clipboard-list"></i> Assessments</span>
+                                    </label>
+                                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px;background:#f8fafc;border-radius:4px;">
+                                        <input type="checkbox" id="importAttendance" checked style="accent-color:#06b6d4;"> 
+                                        <span style="font-size:0.9rem;"><i class="fas fa-calendar-check"></i> Attendance</span>
+                                    </label>
+                                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px;background:#f8fafc;border-radius:4px;grid-column:span 2;">
+                                        <input type="checkbox" id="importSchoolInfo" checked style="accent-color:#7c3aed;"> 
+                                        <span style="font-size:0.9rem;"><i class="fas fa-cog"></i> School Info & Settings</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <button class="btn" onclick="importData()" style="width:100%;padding:12px;background:linear-gradient(135deg,#d97706,#b45309);color:white;border:none;">
+                                <i class="fas fa-upload"></i> Import Data
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Clear Data Section -->
+                    <div style="padding:25px;background:linear-gradient(135deg,#fef2f2,#fee2e2);border-radius:12px;border:2px solid #fecaca;margin-top:25px;">
+                        <div style="display:flex;align-items:center;gap:15px;margin-bottom:20px;">
+                            <div style="width:50px;height:50px;background:linear-gradient(135deg,#dc2626,#b91c1c);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                                <i class="fas fa-trash-alt" style="color:white;font-size:1.3rem;"></i>
+                            </div>
+                            <div>
+                                <h3 style="margin:0;color:#991b1b;font-size:1.2rem;">Clear Data</h3>
+                                <p style="margin:2px 0 0 0;color:#b91c1c;font-size:0.8rem;">Permanently delete data from the system</p>
+                            </div>
+                        </div>
+                        
+                        <p style="color:#dc2626;margin-bottom:15px;padding:10px;background:white;border-radius:6px;border-left:3px solid #dc2626;">
+                            <i class="fas fa-exclamation-triangle"></i> <strong>Warning:</strong> This action cannot be undone! Please export your data before clearing.
+                        </p>
+                        
+                        <div style="display:flex;flex-wrap:wrap;gap:10px;">
+                            <button class="btn" onclick="clearAllData('students')" style="background:#0ea5e9;color:white;border:none;padding:10px 15px;border-radius:6px;">
+                                <i class="fas fa-users"></i> Clear Students
+                            </button>
+                            <button class="btn" onclick="clearAllData('fees')" style="background:#10b981;color:white;border:none;padding:10px 15px;border-radius:6px;">
+                                <i class="fas fa-money-bill"></i> Clear Fees
+                            </button>
+                            <button class="btn" onclick="clearAllData('assessments')" style="background:#f59e0b;color:white;border:none;padding:10px 15px;border-radius:6px;">
+                                <i class="fas fa-pencil-alt"></i> Clear Assessments
+                            </button>
+                            <button class="btn" onclick="clearAllData('attendance')" style="background:#06b6d4;color:white;border:none;padding:10px 15px;border-radius:6px;">
+                                <i class="fas fa-calendar"></i> Clear Attendance
+                            </button>
+                            <button class="btn" onclick="clearAllData('all')" style="background:#dc2626;color:white;border:none;padding:10px 15px;border-radius:6px;font-weight:bold;">
+                                <i class="fas fa-radiation"></i> CLEAR ALL DATA
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
     </div>
 
@@ -2261,6 +2438,20 @@
         } else {
             errorMsg.style.display = 'block';
             errorMsg.textContent = 'Invalid username or password';
+        }
+    }
+    
+    // Toggle password visibility
+    function toggleLoginPassword() {
+        const passwordInput = document.getElementById('loginPassword');
+        const toggleIcon = document.getElementById('loginPasswordToggle');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleIcon.className = 'fas fa-eye-slash';
+        } else {
+            passwordInput.type = 'password';
+            toggleIcon.className = 'fas fa-eye';
         }
     }
     
@@ -2569,6 +2760,243 @@
             loadSchoolInfo();
             showNotification('Settings saved!', 'success');
             addActivity('Updated school settings');
+        }
+
+        // Data Management Functions
+        function exportData() {
+            const data = {
+                exportDate: new Date().toISOString(),
+                version: '1.0'
+            };
+            
+            if (document.getElementById('exportStudents').checked) {
+                data.students = JSON.parse(localStorage.getItem('students')) || [];
+            }
+            if (document.getElementById('exportFees').checked) {
+                data.fees = JSON.parse(localStorage.getItem('fees')) || [];
+            }
+            if (document.getElementById('exportAssessments').checked) {
+                data.assessments = JSON.parse(localStorage.getItem('assessments')) || [];
+            }
+            if (document.getElementById('exportAttendance').checked) {
+                data.attendance = JSON.parse(localStorage.getItem('attendance')) || [];
+            }
+            if (document.getElementById('exportSchoolInfo').checked) {
+                data.schoolInfo = JSON.parse(localStorage.getItem('schoolInfo')) || {};
+                data.activities = JSON.parse(localStorage.getItem('activities')) || [];
+                data.feeItems = JSON.parse(localStorage.getItem('feeItems')) || [];
+                data.closedTerms = JSON.parse(localStorage.getItem('closedTerms')) || {};
+            }
+            
+            const jsonStr = JSON.stringify(data, null, 2);
+            const blob = new Blob([jsonStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `cbe_school_backup_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showNotification('Data exported successfully!', 'success');
+            addActivity('Exported school data backup');
+        }
+
+        function importData() {
+            const fileInput = document.getElementById('importFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showNotification('Please select a backup file', 'error');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    const importMode = document.querySelector('input[name="importMode"]:checked').value;
+                    
+                    let importCount = 0;
+                    
+                    // Import Students
+                    if (document.getElementById('importStudents').checked && importedData.students) {
+                        if (importMode === 'replace') {
+                            localStorage.setItem('students', JSON.stringify(importedData.students));
+                            students = importedData.students;
+                        } else {
+                            // Merge - add new students, keep existing
+                            const existingStudents = JSON.parse(localStorage.getItem('students')) || [];
+                            const existingIds = existingStudents.map(s => s.id);
+                            importedData.students.forEach(s => {
+                                if (!existingIds.includes(s.id)) {
+                                    existingStudents.push(s);
+                                }
+                            });
+                            localStorage.setItem('students', JSON.stringify(existingStudents));
+                            students = existingStudents;
+                        }
+                        importCount++;
+                    }
+                    
+                    // Import Fees
+                    if (document.getElementById('importFees').checked && importedData.fees) {
+                        if (importMode === 'replace') {
+                            localStorage.setItem('fees', JSON.stringify(importedData.fees));
+                            fees = importedData.fees;
+                        } else {
+                            const existingFees = JSON.parse(localStorage.getItem('fees')) || [];
+                            const existingIds = existingFees.map(f => f.studentId);
+                            importedData.fees.forEach(f => {
+                                if (!existingIds.includes(f.studentId)) {
+                                    existingFees.push(f);
+                                }
+                            });
+                            localStorage.setItem('fees', JSON.stringify(existingFees));
+                            fees = existingFees;
+                        }
+                        importCount++;
+                    }
+                    
+                    // Import Assessments
+                    if (document.getElementById('importAssessments').checked && importedData.assessments) {
+                        if (importMode === 'replace') {
+                            localStorage.setItem('assessments', JSON.stringify(importedData.assessments));
+                            assessments = importedData.assessments;
+                        } else {
+                            const existingAssessments = JSON.parse(localStorage.getItem('assessments')) || [];
+                            importedData.assessments.forEach(a => {
+                                const idx = existingAssessments.findIndex(e => e.studentId === a.studentId && e.term === a.term && e.exam === a.exam);
+                                if (idx === -1) {
+                                    existingAssessments.push(a);
+                                }
+                            });
+                            localStorage.setItem('assessments', JSON.stringify(existingAssessments));
+                            assessments = existingAssessments;
+                        }
+                        importCount++;
+                    }
+                    
+                    // Import Attendance
+                    if (document.getElementById('importAttendance').checked && importedData.attendance) {
+                        if (importMode === 'replace') {
+                            localStorage.setItem('attendance', JSON.stringify(importedData.attendance));
+                            attendance = importedData.attendance;
+                        } else {
+                            const existingAttendance = JSON.parse(localStorage.getItem('attendance')) || [];
+                            importedData.attendance.forEach(a => {
+                                const idx = existingAttendance.findIndex(e => e.studentId === a.studentId && e.date === a.date);
+                                if (idx === -1) {
+                                    existingAttendance.push(a);
+                                }
+                            });
+                            localStorage.setItem('attendance', JSON.stringify(existingAttendance));
+                            attendance = existingAttendance;
+                        }
+                        importCount++;
+                    }
+                    
+                    // Import School Info
+                    if (document.getElementById('importSchoolInfo').checked && importedData.schoolInfo) {
+                        localStorage.setItem('schoolInfo', JSON.stringify(importedData.schoolInfo));
+                        schoolInfo = importedData.schoolInfo;
+                        loadSchoolInfo();
+                        if (importedData.activities) {
+                            localStorage.setItem('activities', JSON.stringify(importedData.activities));
+                        }
+                        if (importedData.feeItems) {
+                            localStorage.setItem('feeItems', JSON.stringify(importedData.feeItems));
+                        }
+                        if (importedData.closedTerms) {
+                            localStorage.setItem('closedTerms', JSON.stringify(importedData.closedTerms));
+                        }
+                        importCount++;
+                    }
+                    
+                    // Refresh all tables
+                    loadStudentsTable();
+                    loadStudentsForDropdown();
+                    loadFeeTable();
+                    loadAssessmentsTable();
+                    loadDashboard();
+                    
+                    showNotification(`Data imported successfully! (${importCount} categories)`, 'success');
+                    addActivity(`Imported data (${importMode} mode)`);
+                    
+                } catch (error) {
+                    showNotification('Error importing data: ' + error.message, 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function clearAllData(type) {
+            const messages = {
+                students: 'All students will be deleted. This cannot be undone!',
+                fees: 'All fee records will be deleted. This cannot be undone!',
+                assessments: 'All assessment records will be deleted. This cannot be undone!',
+                attendance: 'All attendance records will be deleted. This cannot be undone!',
+                all: 'ALL data will be permanently deleted. This cannot be undone!'
+            };
+            
+            if (!confirm('WARNING: ' + messages[type])) {
+                return;
+            }
+            
+            if (!confirm('Are you absolutely sure? Click OK to confirm deletion.')) {
+                return;
+            }
+            
+            switch(type) {
+                case 'students':
+                    localStorage.removeItem('students');
+                    students = [];
+                    break;
+                case 'fees':
+                    localStorage.removeItem('fees');
+                    fees = [];
+                    break;
+                case 'assessments':
+                    localStorage.removeItem('assessments');
+                    assessments = [];
+                    break;
+                case 'attendance':
+                    localStorage.removeItem('attendance');
+                    attendance = [];
+                    break;
+                case 'all':
+                    localStorage.clear();
+                    students = [];
+                    fees = [];
+                    assessments = [];
+                    attendance = [];
+                    schoolInfo = {
+                        name: 'CBE School of Excellence',
+                        address: '123 Education Avenue, Nairobi, Kenya',
+                        phone: '+254 700 000 000',
+                        email: 'info@cbeschool.ac.ke',
+                        motto: 'Excellence in Competency-Based Education',
+                        academicYear: 2024,
+                        logo: null,
+                        principalName: '',
+                        principalSignature: null,
+                        clerkName: '',
+                        clerkSignature: null,
+                        defaultClassTeacher: ''
+                    };
+                    localStorage.setItem('schoolInfo', JSON.stringify(schoolInfo));
+                    break;
+            }
+            
+            loadStudentsTable();
+            loadStudentsForDropdown();
+            loadFeeTable();
+            loadAssessmentsTable();
+            loadDashboard();
+            
+            showNotification(`${type === 'all' ? 'All data cleared' : type + ' data cleared'} successfully!`, 'success');
+            addActivity(`Cleared ${type} data`);
         }
 
         // Preview signature
@@ -3555,18 +3983,39 @@
 
         function recordFeePayment() {
             const studentId = document.getElementById('feeStudent').value;
-            const amount = parseFloat(document.getElementById('feeAmount').value);
-            const date = document.getElementById('feeDate').value;
+            const date = document.getElementById('feeDate').value || new Date().toISOString().split('T')[0];
             const method = document.getElementById('paymentMethod').value;
             const ref = document.getElementById('transactionRef').value;
 
-            // Get selected fee items from the summary
-            const selectedCards = selectedPaymentFees.length > 0 ? selectedPaymentFees : [];
+            // Get selected fee items from checked checkboxes directly
+            const checkedCheckboxes = document.querySelectorAll('#feeCardsPayment input[type="checkbox"]:checked');
+            let amount = 0;
+            let selectedCards = [];
+            
+            checkedCheckboxes.forEach(checkbox => {
+                const feeAmount = parseFloat(checkbox.dataset.amount) || 0;
+                if (feeAmount > 0) {
+                    amount += feeAmount;
+                    selectedCards.push({
+                        id: checkbox.value,
+                        name: checkbox.dataset.name,
+                        amount: feeAmount
+                    });
+                }
+            });
 
-            if (!studentId || !amount) {
-                showNotification('Please fill all fields', 'error');
+            if (!studentId) {
+                showNotification('Please select a student', 'error');
                 return;
             }
+
+            if (selectedCards.length === 0) {
+                showNotification('Please select at least one fee item to pay', 'error');
+                return;
+            }
+
+            // Update the fee amount field
+            document.getElementById('feeAmount').value = amount;
 
             const feeIndex = fees.findIndex(f => f.studentId == studentId);
             const student = students.find(s => s.id == studentId);
@@ -3609,7 +4058,6 @@
             } else {
                 // Create new fee record if doesn't exist
                 const student = students.find(s => s.id == studentId);
-                const selectedCards = selectedPaymentFees.length > 0 ? selectedPaymentFees : [];
                 const totalFee = student?.totalFee || amount;
                 
                 const newFeeRecord = {
