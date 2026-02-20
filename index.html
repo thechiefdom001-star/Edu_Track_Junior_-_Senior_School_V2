@@ -968,6 +968,11 @@
                 box-shadow: none;
                 border: 1px solid #e2e8f0;
             }
+
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
         }
     </style>
 </head>
@@ -2149,6 +2154,44 @@
                 </div>
             </div>
 
+            <!-- Payment Details -->
+            <div class="card">
+                <div class="card-header" style="background:#059669;">
+                    <i class="fas fa-university"></i> Payment Details for Receipts & Reminders
+                </div>
+                <div class="card-body">
+                    <p style="margin-bottom:20px;color:#64748b;padding:10px;background:#f0fdf4;border-radius:6px;border-left:3px solid #059669;">
+                        <i class="fas fa-info-circle"></i> These payment details will appear on receipts and fee reminders for parents to make payments.
+                    </p>
+                    
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+                        <div class="form-group">
+                            <label><i class="fas fa-university"></i> Bank Name</label>
+                            <input type="text" id="bankNameInput" placeholder="e.g., Kenya Commercial Bank">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-credit-card"></i> Bank Account Number</label>
+                            <input type="text" id="bankAccountInput" placeholder="e.g., 1234567890">
+                        </div>
+                    </div>
+                    
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+                        <div class="form-group">
+                            <label><i class="fas fa-mobile-alt"></i> M-PESA Paybill Number</label>
+                            <input type="text" id="mpesaPaybillInput" placeholder="e.g., 123456">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-mobile-alt"></i> Airtel Money Paybill</label>
+                            <input type="text" id="airtelPaybillInput" placeholder="e.g., 123456">
+                        </div>
+                    </div>
+
+                    <button class="btn btn-success" onclick="saveSchoolInfo()">
+                        <i class="fas fa-save"></i> Save Payment Details
+                    </button>
+                </div>
+            </div>
+
             <!-- Fee Structure -->
             <div class="card">
                 <div class="card-header" style="background:#10b981;">Fee Structure Management</div>
@@ -2506,7 +2549,11 @@
             principalSignature: null,
             clerkName: '',
             clerkSignature: null,
-            defaultClassTeacher: ''
+            defaultClassTeacher: '',
+            bankName: '',
+            bankAccount: '',
+            mpesaPaybill: '',
+            airtelPaybill: ''
         };
 
         let attendance = JSON.parse(localStorage.getItem('attendance')) || [];
@@ -2706,6 +2753,12 @@
                 }
             }
 
+            // Load payment details
+            document.getElementById('bankNameInput').value = schoolInfo.bankName || '';
+            document.getElementById('bankAccountInput').value = schoolInfo.bankAccount || '';
+            document.getElementById('mpesaPaybillInput').value = schoolInfo.mpesaPaybill || '';
+            document.getElementById('airtelPaybillInput').value = schoolInfo.airtelPaybill || '';
+
             // Load school logo
             if (schoolInfo.logo) {
                 const logoPreview = document.getElementById('schoolLogoPreview');
@@ -2734,10 +2787,12 @@
 
         // Get school logo HTML for print
         function getSchoolLogoHTML(size = 60) {
+            const sizeValue = typeof size === 'string' ? size : size + 'px';
+            const fontSize = typeof size === 'string' ? `calc(${size} / 3)` : (size / 3) + 'rem';
             if (schoolInfo.logo) {
-                return `<img src="${schoolInfo.logo}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;">`;
+                return `<img src="${schoolInfo.logo}" style="width:${sizeValue};height:${sizeValue};border-radius:50%;object-fit:cover;">`;
             }
-            return `<div class="school-logo" style="width:${size}px;height:${size}px;font-size:${size / 3}rem;"><i class="fas fa-graduation-cap"></i></div>`;
+            return `<div class="school-logo" style="width:${sizeValue};height:${sizeValue};font-size:${fontSize};"><i class="fas fa-graduation-cap"></i></div>`;
         }
 
         // Save school info
@@ -2754,7 +2809,11 @@
                 principalSignature: schoolInfo.principalSignature,
                 clerkName: document.getElementById('clerkNameInput').value,
                 clerkSignature: schoolInfo.clerkSignature,
-                defaultClassTeacher: document.getElementById('defaultClassTeacherInput').value
+                defaultClassTeacher: document.getElementById('defaultClassTeacherInput').value,
+                bankName: document.getElementById('bankNameInput').value,
+                bankAccount: document.getElementById('bankAccountInput').value,
+                mpesaPaybill: document.getElementById('mpesaPaybillInput').value,
+                airtelPaybill: document.getElementById('airtelPaybillInput').value
             };
             localStorage.setItem('schoolInfo', JSON.stringify(schoolInfo));
             loadSchoolInfo();
@@ -3020,10 +3079,12 @@
 
         // Get signature HTML for printing
         function getSignatureHTML(type, width = 150, height = 50) {
+            const widthVal = typeof width === 'string' ? width : width + 'px';
+            const heightVal = typeof height === 'string' ? height : height + 'px';
             if (type === 'principal' && schoolInfo.principalSignature) {
-                return `<img src="${schoolInfo.principalSignature}" style="width:${width}px;height:${height}px;object-fit:contain;">`;
+                return `<img src="${schoolInfo.principalSignature}" style="width:${widthVal};height:${heightVal};object-fit:contain;">`;
             } else if (type === 'clerk' && schoolInfo.clerkSignature) {
-                return `<img src="${schoolInfo.clerkSignature}" style="width:${width}px;height:${height}px;object-fit:contain;">`;
+                return `<img src="${schoolInfo.clerkSignature}" style="width:${widthVal};height:${heightVal};object-fit:contain;">`;
             }
             return '';
         }
@@ -4098,6 +4159,7 @@
         }
 
         function printFeeReceiptDirect(studentId, paymentIndex) {
+            schoolInfo = JSON.parse(localStorage.getItem('schoolInfo')) || schoolInfo;
             const fee = fees.find(f => f.studentId == studentId);
             const student = students.find(s => s.id == studentId);
             const payment = fee?.payments?.[paymentIndex];
@@ -4138,69 +4200,92 @@
                 </table>`;
 
                 const content = `
-                    <div style="border:2px solid #e2e8f0;padding:30px;border-radius:12px;max-width:800px;margin:auto;">
-                        <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #10b981;padding-bottom:15px;margin-bottom:20px;">
-                            ${getSchoolLogoHTML(80)}
-                            <div style="text-align:center;flex-grow:1;">
-                                <h1 style="margin:0;color:#0f172a;font-size:1.8rem;">${schoolInfo.name.toUpperCase()}</h1>
-                                <p style="margin:5px 0;color:#64748b;font-weight:500;">${schoolInfo.address}</p>
-                                <p style="margin:0;color:#10b981;font-weight:bold;">MOTTO: ${schoolInfo.motto}</p>
+                    <div style="border:2px solid #1e293b;padding:15px;border-radius:8px;max-width:100%;margin:0 auto;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #10b981;padding-bottom:10px;margin-bottom:12px;">
+                            ${getSchoolLogoHTML(50)}
+                            <div style="text-align:center;flex:1;padding:0 10px;">
+                                <h1 style="margin:0;color:#0f172a;font-size:16px;font-weight:bold;">${schoolInfo.name.toUpperCase()}</h1>
+                                <p style="margin:2px 0;color:#64748b;font-size:10px;">${schoolInfo.address}</p>
                             </div>
-                            <div style="text-align:right;">
-                                <div style="font-weight:bold;color:#10b981;">OFFICIAL RECEIPT</div>
-                                <div style="color:#64748b;font-size:0.9rem;"># ${payment.receipt}</div>
-                            </div>
-                        </div>
-
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
-                            <div style="background:#f8fafc;padding:15px;border-radius:8px;border-left:4px solid #10b981;">
-                                <h4 style="margin:0 0 10px 0;color:#475569;font-size:0.8rem;text-transform:uppercase;">Student Information</h4>
-                                <div style="color:#1e293b;font-weight:bold;font-size:1.1rem;">${student.name}</div>
-                                <div style="color:#64748b;">Adm: ${student.admission}</div>
-                                <div style="color:#64748b;">Grade: ${student.grade}</div>
-                            </div>
-                            <div style="background:#f8fafc;padding:15px;border-radius:8px;border-left:4px solid #3b82f6;text-align:right;">
-                                <h4 style="margin:0 0 10px 0;color:#475569;font-size:0.8rem;text-transform:uppercase;">Payment Details</h4>
-                                <div style="color:#1e293b;font-weight:bold;">Date: ${payment.date}</div>
-                                <div style="color:#64748b;">Method: ${payment.method.toUpperCase()}</div>
-                                <div style="color:#64748b;">Ref: ${payment.transactionRef || 'N/A'}</div>
+                            <div style="text-align:right;font-size:11px;">
+                                <div style="font-weight:bold;color:#10b981;">RECEIPT</div>
+                                <div style="color:#64748b;"># ${payment.receipt}</div>
                             </div>
                         </div>
 
-                        ${feesDetailHTML}
-
-                        <div style="margin-top:20px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:15px;">
-                            <div style="padding:15px;background:#f1f5f9;border-radius:8px;text-align:center;">
-                                <span style="font-size:0.75rem;color:#64748b;text-transform:uppercase;">Current Payable Total</span><br>
-                                <strong style="font-size:1.1rem;color:#1e293b;">KES ${fee.totalFee.toLocaleString()}</strong>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;font-size:11px;">
+                            <div style="background:#f1f5f9;padding:8px;border-radius:4px;border-left:3px solid #10b981;">
+                                <strong style="color:#475569;font-size:9px;">STUDENT</strong>
+                                <div style="color:#1e293b;font-weight:bold;">${student.name}</div>
+                                <div style="color:#64748b;font-size:10px;">Adm: ${student.admission} | Grade: ${student.grade}</div>
                             </div>
-                            <div style="padding:15px;background:#f0fdf4;border-radius:8px;text-align:center;border:1px solid #bbf7d0;">
-                                <span style="font-size:0.75rem;color:#64748b;text-transform:uppercase;">Cumulative Paid</span><br>
-                                <strong style="font-size:1.1rem;color:#10b981;">KES ${fee.totalPaid.toLocaleString()}</strong>
-                            </div>
-                            <div style="padding:15px;background:#fff1f2;border-radius:8px;text-align:center;border:1px solid #fecaca;">
-                                <span style="font-size:0.75rem;color:#64748b;text-transform:uppercase;">Current Balance</span><br>
-                                <strong style="font-size:1.1rem;color:#e11d48;">KES ${fee.balance.toLocaleString()}</strong>
+                            <div style="background:#f1f5f9;padding:8px;border-radius:4px;border-left:3px solid #3b82f6;text-align:right;">
+                                <strong style="color:#475569;font-size:9px;">PAYMENT</strong>
+                                <div style="color:#1e293b;font-weight:bold;">${payment.date}</div>
+                                <div style="color:#64748b;font-size:10px;">${payment.method.toUpperCase()}</div>
                             </div>
                         </div>
 
-                        <div style="margin-top:40px;display:flex;justify-content:space-between;align-items:flex-end;">
-                            <div style="text-align:center;">
-                                <div style="width:200px;border-bottom:1px solid #64748b;margin-bottom:5px;min-height:40px;">
-                                    ${getSignatureHTML('clerk', 150, 40)}
+                        <table style="width:100%;margin:8px 0;border-collapse:collapse;font-size:11px;">
+                            <thead>
+                                <tr style="background:#f8fafc;">
+                                    <th style="padding:6px;border:1px solid #e2e8f0;text-align:left;">FEE ITEM</th>
+                                    <th style="padding:6px;border:1px solid #e2e8f0;text-align:right;">AMOUNT</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${payment.selectedFeeDetails && payment.selectedFeeDetails.length > 0 ? 
+                                    payment.selectedFeeDetails.map(fi => `<tr><td style="padding:5px;border:1px solid #e2e8f0;">${fi.name}</td><td style="padding:5px;border:1px solid #e2e8f0;text-align:right;">${fi.amount.toLocaleString()}</td></tr>`).join('') :
+                                    `<tr><td style="padding:5px;border:1px solid #e2e8f0;">${payment.cardName}</td><td style="padding:5px;border:1px solid #e2e8f0;text-align:right;">${payment.amount.toLocaleString()}</td></tr>`
+                                }
+                                <tr style="background:#f0fdf4;">
+                                    <td style="padding:6px;border:1px solid #e2e8f0;text-align:right;font-weight:bold;">TOTAL</td>
+                                    <td style="padding:6px;border:1px solid #e2e8f0;text-align:right;font-weight:bold;color:#10b981;font-size:13px;">${payment.amount.toLocaleString()}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;margin:10px 0;font-size:10px;">
+                            <div style="padding:8px;background:#f1f5f9;border-radius:4px;text-align:center;">
+                                <div style="color:#64748b;">TOTAL</div>
+                                <strong style="color:#1e293b;">${fee.totalFee.toLocaleString()}</strong>
+                            </div>
+                            <div style="padding:8px;background:#dcfce7;border-radius:4px;text-align:center;">
+                                <div style="color:#166534;">PAID</div>
+                                <strong style="color:#10b981;">${fee.totalPaid.toLocaleString()}</strong>
+                            </div>
+                            <div style="padding:8px;background:#fee2e2;border-radius:4px;text-align:center;">
+                                <div style="color:#991b1b;">BALANCE</div>
+                                <strong style="color:#ef4444;">${fee.balance.toLocaleString()}</strong>
+                            </div>
+                        </div>
+
+                        ${(schoolInfo.bankName || schoolInfo.mpesaPaybill || schoolInfo.airtelPaybill) ? `
+                        <div style="margin-top:8px;padding:8px;background:#ecfdf5;border-radius:4px;font-size:10px;">
+                            <strong style="color:#166534;">Payment:</strong>
+                            ${schoolInfo.bankName ? ` ${schoolInfo.bankName}:${schoolInfo.bankAccount || ''}` : ''}
+                            ${schoolInfo.mpesaPaybill ? ` | M-PESA:${schoolInfo.mpesaPaybill}` : ''}
+                            ${schoolInfo.airtelPaybill ? ` | Airtel:${schoolInfo.airtelPaybill}` : ''}
+                        </div>
+                        ` : ''}
+
+                        <div style="margin-top:15px;display:flex;justify-content:space-between;align-items:flex-end;font-size:10px;">
+                            <div style="text-align:center;flex:1;">
+                                <div style="border-bottom:1px solid #64748b;margin-bottom:3px;min-height:25px;width:80%;">
+                                    ${getSignatureHTML('clerk', 80, 25)}
                                 </div>
-                                <div style="font-size:0.8rem;color:#64748b;font-weight:600;">Treasurer's Signature</div>
+                                <div style="color:#64748b;">Treasurer</div>
                             </div>
-                            <div style="text-align:center;">
-                                <div style="width:200px;border-bottom:1px solid #64748b;margin-bottom:5px;min-height:40px;">
-                                    ${getSignatureHTML('principal', 150, 40)}
+                            <div style="text-align:center;flex:1;">
+                                <div style="border-bottom:1px solid #64748b;margin-bottom:3px;min-height:25px;width:80%;margin-left:auto;">
+                                    ${getSignatureHTML('principal', 80, 25)}
                                 </div>
-                                <div style="font-size:0.8rem;color:#64748b;font-weight:600;">School Official Stamp</div>
+                                <div style="color:#64748b;">Principal</div>
                             </div>
                         </div>
 
-                        <div style="margin-top:30px;text-align:center;border-top:1px dashed #cbd5e1;padding-top:15px;color:#94a3b8;font-size:0.85rem;">
-                            This is an electronically generated receipt for ${schoolInfo.name}. All payments are subject to school policy.
+                        <div style="margin-top:10px;text-align:center;color:#94a3b8;font-size:9px;border-top:1px dashed #cbd5e1;padding-top:8px;">
+                            ${schoolInfo.name} | ${schoolInfo.motto}
                         </div>
                     </div>
                 `;
@@ -4968,13 +5053,15 @@
 
                         let avg = termExamScores.length > 0 ? (termExamScores.reduce((a, b) => a + b, 0) / termExamScores.length).toFixed(1) : null;
                         if (avg !== null) {
+                            const gradeInfo = getGradeFromScore(parseFloat(avg));
                             studentAllScores.push(parseFloat(avg));
                             classOverallScores.push(parseFloat(avg));
+                            row += `<td style="padding:8px;border:1px solid #ddd;text-align:center;background:#f0fdf4;">${avg}%</td>`;
+                            row += `<td style="padding:8px;border:1px solid #ddd;text-align:center;"><span class="grade-badge ${gradeInfo.class}">${gradeInfo.grade}</span></td>`;
+                        } else {
+                            row += '<td style="padding:8px;border:1px solid #ddd;text-align:center;">-</td>';
+                            row += '<td style="padding:8px;border:1px solid #ddd;text-align:center;">-</td>';
                         }
-
-                        const gradeInfo = avg !== null ? getGradeFromScore(parseFloat(avg)) : null;
-                        row += `<td style="padding:8px;border:1px solid #ddd;text-align:center;${avg !== null ? 'background:#f0fdf4;' : ''}">${avg !== null ? avg + '%' : '-'}</td>`;
-                        row += `<td style="padding:8px;border:1px solid #ddd;text-align:center;">${gradeInfo ? '<span class="grade-badge ' + gradeInfo.class + '">' + gradeInfo.grade + '</span>' : '-'}</td>`;
                     });
                 });
 
@@ -5545,13 +5632,14 @@
                     exams.forEach(exam => {
                         const examData = termData.exams.find(e => e.exam === exam);
                         const score = examData.assessment?.scores[subject] || null;
-                        if (score !== null) {
-                            termAverages[term].push(score);
-                            overallScores.push(score);
-                            subjectPoints[subject].scores.push(score);
-                            subjectPoints[subject].points.push(getGradeFromScore(score).points);
-                        }
                         const gradeInfo = score !== null ? getGradeFromScore(score) : null;
+                        const points = gradeInfo ? gradeInfo.points : null;
+                        if (score !== null) {
+                            termAverages[term].push(points);
+                            overallScores.push(points);
+                            subjectPoints[subject].scores.push(score);
+                            subjectPoints[subject].points.push(points);
+                        }
                         row += `<td style="padding:8px;border:1px solid #ddd;text-align:center;${score !== null ? 'background:#f0f9ff;' : ''}">${score !== null ? score + '%' : '-'}</td>`;
                         row += `<td style="padding:8px;border:1px solid #ddd;text-align:center;">${gradeInfo ? '<span class="grade-badge ' + gradeInfo.class + '">' + gradeInfo.grade + '</span>' : '-'}</td>`;
                     });
@@ -5579,11 +5667,11 @@
             });
             termAvgRow += '</tr>';
 
-            // Overall average
+            // Overall average - convert points back to percentage for grade lookup
             const overallAvg = overallScores.length > 0 ? (overallScores.reduce((a, b) => a + b, 0) / overallScores.length).toFixed(1) : '-';
-            const overallGrade = overallAvg !== '-' ? getGradeFromScore(parseFloat(overallAvg)) : null;
+            const overallGrade = overallAvg !== '-' ? getGradeFromScore((parseFloat(overallAvg) / 8) * 100) : null;
 
-            // Calculate average points - average of each subject's average points across 3 exams
+            // Calculate total points - sum of each subject's average points across all terms/exams
             let totalPoints = 0;
             let subjectsWithPoints = 0;
             Object.values(subjectPoints).forEach(sp => {
@@ -5593,7 +5681,7 @@
                     subjectsWithPoints++;
                 }
             });
-            // Round to nearest integer (max 72 if all subjects have max points)
+            // Round to nearest integer (max 72 if all 9 subjects have max 8 points)
             totalPoints = Math.round(totalPoints);
 
             // Get attendance (all terms for consolidated report)
@@ -5738,7 +5826,7 @@
             setTimeout(() => {
                 const ctx = document.getElementById('consolidatedSubjectChart');
                 if (ctx) {
-                    // Prepare data for the chart - convert scores to points on scale of 10
+                    // Prepare data for the chart - convert scores to points on scale of 1-8
                     const subjectLabels = subjectList.slice(0, 10); // Limit to 10 subjects for readability
                     const subjectPointsData = subjectLabels.map(subj => {
                         const sp = subjectPoints[subj];
@@ -5754,7 +5842,7 @@
                         data: {
                             labels: subjectLabels,
                             datasets: [{
-                                label: 'Points (Scale of 10)',
+                                label: 'Points (1-8)',
                                 data: subjectPointsData,
                                 borderColor: '#8b5cf6',
                                 backgroundColor: 'rgba(139, 92, 246, 0.1)',
@@ -5773,11 +5861,50 @@
                             scales: {
                                 y: {
                                     beginAtZero: true,
-                                    max: 10,
-                                    title: { display: true, text: 'Points (Scale of 10)' }
+                                    max: 8,
+                                    min: 0,
+                                    ticks: {
+                                        stepSize: 1,
+                                        callback: function(value) {
+                                            return value;
+                                        },
+                                        color: '#1e293b',
+                                        font: { size: 11, weight: 'bold' }
+                                    },
+                                    title: { 
+                                        display: true, 
+                                        text: 'Points (1-8)',
+                                        color: '#1e293b',
+                                        font: { size: 12, weight: 'bold' }
+                                    },
+                                    grid: {
+                                        color: function(context) {
+                                            if (context.tick.value === 0) return '#334155';
+                                            if (context.tick.value % 2 === 0) return 'rgba(51, 65, 85, 0.3)';
+                                            return 'rgba(51, 65, 85, 0.1)';
+                                        },
+                                        lineWidth: function(context) {
+                                            if (context.tick.value === 0) return 2;
+                                            if (context.tick.value % 2 === 0) return 1;
+                                            return 0.5;
+                                        }
+                                    }
                                 },
                                 x: {
-                                    title: { display: true, text: 'Subjects' }
+                                    ticks: {
+                                        color: '#1e293b',
+                                        font: { size: 11, weight: 'bold' }
+                                    },
+                                    title: { 
+                                        display: true, 
+                                        text: 'Subjects',
+                                        color: '#1e293b',
+                                        font: { size: 12, weight: 'bold' }
+                                    },
+                                    grid: {
+                                        color: 'rgba(51, 65, 85, 0.15)',
+                                        lineWidth: 1
+                                    }
                                 }
                             },
                             plugins: {
@@ -6263,32 +6390,27 @@ let subjects = '';
         }
 
         function printContent(content) {
-            // Reload schoolInfo for logo
             const printSchoolInfo = JSON.parse(localStorage.getItem('schoolInfo')) || schoolInfo;
-            
             const win = window.open('', '_blank');
             win.document.write(`
+                <!DOCTYPE html>
                 <html>
-                    <head><title>Print - ${printSchoolInfo.name}</title>
+                <head>
+                    <title>Print - ${printSchoolInfo.name}</title>
                     <style>
-                        body { font-family: Arial; padding: 20px; }
-                        table { width:100%; border-collapse:collapse; }
-                        th, td { border:1px solid #ddd; padding:8px; }
-                        th { background:#f8fafc; }
-                        .grade-badge { display:inline-block; padding:3px 8px; border-radius:3px; color:white; }
-                        .grade-ee1 { background:#10b981; }
-                        .grade-ee2 { background:#059669; }
-                        .grade-me1 { background:#3b82f6; }
-                        .grade-me2 { background:#2563eb; }
-                        .grade-ae1 { background:#f59e0b; }
-                        .grade-ae2 { background:#d97706; }
-                        .grade-be1 { background:#ef4444; }
-                        .grade-be2 { background:#dc2626; }
+                        * { box-sizing: border-box; margin: 0; padding: 0; }
+                        @page { size: auto; margin: 10mm; }
+                        html, body { width: 100%; height: 100%; }
+                        body { font-family: Arial, sans-serif; font-size: 12px; line-height: 1.4; padding: 5mm; }
+                        @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+                        table { width: 100%; border-collapse: collapse; }
+                        th, td { border: 1px solid #ddd; padding: 4px; }
+                        th { background: #f8fafc; }
+                        img { max-width: 100%; height: auto; }
                     </style>
-                    </head>
-                    <body>${content}</body>
-                </html>
-            `);
+                </head>
+                <body style="max-width: 100%; margin: 0 auto;">${content}</body>
+                </html>`);
             win.document.close();
             win.print();
         }
@@ -6301,6 +6423,7 @@ let subjects = '';
         function loadFeeReminders() {
             fees = JSON.parse(localStorage.getItem('fees')) || [];
             students = JSON.parse(localStorage.getItem('students')) || [];
+            schoolInfo = JSON.parse(localStorage.getItem('schoolInfo')) || schoolInfo;
 
             const filterStudent = document.getElementById('filterReminderStudent')?.value.toLowerCase() || '';
             const filterGrade = document.getElementById('filterReminderGrade')?.value || '';
@@ -6376,6 +6499,7 @@ let subjects = '';
         }
 
         function printSingleReminder(studentId) {
+            schoolInfo = JSON.parse(localStorage.getItem('schoolInfo')) || schoolInfo;
             const fee = fees.find(f => f.studentId == studentId);
             const student = students.find(s => s.id == studentId);
             
@@ -6389,42 +6513,73 @@ let subjects = '';
                 .replace('{paid}', fee.totalPaid.toLocaleString());
 
             const content = `
-                <div style="padding:30px;">
-                    <div style="text-align:center;margin-bottom:30px;">
-                        ${getSchoolLogoHTML(80)}
-                        <h2>${schoolInfo.name}</h2>
-                        <p>${schoolInfo.address}</p>
+                <div style="border:2px solid #1e293b;padding:15px;border-radius:8px;max-width:100%;margin:0 auto;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #dc2626;padding-bottom:8px;margin-bottom:10px;">
+                        ${getSchoolLogoHTML(45)}
+                        <div style="text-align:center;flex:1;padding:0 10px;">
+                            <h1 style="margin:0;color:#0f172a;font-size:14px;font-weight:bold;">${schoolInfo.name}</h1>
+                            <p style="margin:2px 0;color:#64748b;font-size:10px;">${schoolInfo.address}</p>
+                        </div>
+                        <div style="text-align:right;font-size:10px;">
+                            <div style="font-weight:bold;color:#dc2626;">NOTICE</div>
+                        </div>
                     </div>
-                    <h3 style="text-align:center;background:#ef4444;color:white;padding:15px;border-radius:8px;">FEE REMINDER NOTICE</h3>
-                    <div style="background:#fef3c7;padding:20px;border-radius:8px;margin:20px 0;border-left:5px solid #f59e0b;">
-                        <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
-                        <p><strong>To:</strong> ${student.parent || 'Parent/Guardian'}</p>
-                        <p><strong>Student:</strong> ${student.name} (${student.admission})</p>
-                        <p><strong>Grade:</strong> Grade ${student.grade}</p>
+
+                    <div style="text-align:center;margin:8px 0;">
+                        <span style="background:#dc2626;color:white;padding:4px 15px;border-radius:4px;font-size:12px;font-weight:bold;">FEE REMINDER</span>
                     </div>
-                    <div style="background:#f8fafc;padding:20px;border-radius:8px;margin:20px 0;">
-                        <h4>Fee Statement:</h4>
-                        <table style="width:100%;margin-top:10px;">
-                            <tr><td><strong>Total Fee:</strong></td><td>KES ${fee.totalFee.toLocaleString()}</td></tr>
-                            <tr><td><strong>Amount Paid:</strong></td><td>KES ${fee.totalPaid.toLocaleString()}</td></tr>
-                            <tr style="background:#fef2f2;"><td><strong>Balance Due:</strong></td><td style="font-size:1.2rem;color:#ef4444;font-weight:bold;">KES ${fee.balance.toLocaleString()}</td></tr>
+
+                    <div style="background:#fefce8;padding:10px;border-radius:4px;margin:10px 0;font-size:11px;border-left:4px solid #eab308;">
+                        <table style="width:100%;font-size:11px;">
+                            <tr><td style="padding:3px;"><strong>Date:</strong></td><td style="padding:3px;">${new Date().toLocaleDateString()}</td></tr>
+                            <tr><td style="padding:3px;"><strong>To:</strong></td><td style="padding:3px;">${student.parent || 'Parent/Guardian'}</td></tr>
+                            <tr><td style="padding:3px;"><strong>Student:</strong></td><td style="padding:3px;"><strong>${student.name}</strong> (${student.admission})</td></tr>
+                            <tr><td style="padding:3px;"><strong>Grade:</strong></td><td style="padding:3px;">Grade ${student.grade}</td></tr>
                         </table>
                     </div>
-                    <div style="background:white;padding:20px;border:2px solid #ef4444;border-radius:8px;margin:20px 0;">
-                        <h4>Message:</h4>
-                        <p style="line-height:1.8;">${message}</p>
+
+                    <table style="width:100%;margin:10px 0;border-collapse:collapse;font-size:11px;">
+                        <tr><td style="padding:6px;border:1px solid #e2e8f0;">Total Fees</td><td style="padding:6px;border:1px solid #e2e8f0;text-align:right;">${fee.totalFee.toLocaleString()}</td></tr>
+                        <tr><td style="padding:6px;border:1px solid #e2e8f0;">Amount Paid</td><td style="padding:6px;border:1px solid #e2e8f0;text-align:right;color:#10b981;">${fee.totalPaid.toLocaleString()}</td></tr>
+                        <tr style="background:#fee2e2;"><td style="padding:8px;border:1px solid #e2e8f0;font-weight:bold;">BALANCE</td><td style="padding:8px;border:1px solid #e2e8f0;text-align:right;font-weight:bold;font-size:14px;color:#dc2626;">${fee.balance.toLocaleString()}</td></tr>
+                    </table>
+
+                    <div style="background:white;padding:10px;border:1px solid #1e293b;border-radius:4px;margin:10px 0;font-size:11px;">
+                        <strong>Dear Parent/Guardian,</strong>
+                        <p style="line-height:1.5;margin:5px 0;">${message}</p>
                     </div>
-                    <div style="margin-top:30px;padding-top:20px;border-top:1px solid #ddd;display:grid;grid-template-columns:1fr 1fr;gap:20px;text-align:center;">
-                        <div>
-                            <p style="border-top:1px solid #333;padding-top:10px;">Clerk's Signature</p>
-                            ${getSignatureHTML('clerk', 100, 30)}
+
+                    ${(schoolInfo.bankName || schoolInfo.mpesaPaybill || schoolInfo.airtelPaybill) ? `
+                    <div style="background:#ecfdf5;padding:8px;border-radius:4px;font-size:10px;border:1px solid #6ee7b7;">
+                        <strong style="color:#065f46;">Payment:</strong>
+                        ${schoolInfo.bankName ? ` ${schoolInfo.bankName}:${schoolInfo.bankAccount || ''}` : ''}
+                        ${schoolInfo.mpesaPaybill ? ` | M-PESA:${schoolInfo.mpesaPaybill}` : ''}
+                        ${schoolInfo.airtelPaybill ? ` | Airtel:${schoolInfo.airtelPaybill}` : ''}
+                    </div>
+                    ` : ''}
+
+                    <div style="margin-top:15px;display:flex;justify-content:space-between;align-items:flex-end;font-size:10px;">
+                        <div style="text-align:center;flex:1;">
+                            <div style="border-bottom:1px solid #64748b;margin-bottom:3px;min-height:20px;width:80%;">
+                                ${getSignatureHTML('clerk', 70, 20)}
+                            </div>
+                            <div style="color:#64748b;">Administrator</div>
                         </div>
-                        <div>
-                            <p style="border-top:1px solid #333;padding-top:10px;">Principal's Signature</p>
-                            ${getSignatureHTML('principal', 100, 30)}
+                        <div style="text-align:center;flex:1;">
+                            <div style="border-bottom:1px solid #64748b;margin-bottom:3px;min-height:20px;width:80%;margin-left:auto;">
+                                ${getSignatureHTML('principal', 70, 20)}
+                            </div>
+                            <div style="color:#64748b;">Principal</div>
                         </div>
                     </div>
-                    <p style="text-align:center;margin-top:30px;color:#64748b;"><em>${schoolInfo.motto}</em></p>
+
+                    <div style="margin-top:8px;padding:8px;border:1px dashed #cbd5e1;border-radius:4px;font-size:10px;">
+                        <strong>Acknowledgement:</strong> Parent Signature: ____________ Date: ____________
+                    </div>
+
+                    <div style="text-align:center;margin-top:8px;color:#94a3b8;font-size:8px;">
+                        ${schoolInfo.motto}
+                    </div>
                 </div>
             `;
             printContent(content);
@@ -6449,8 +6604,10 @@ let subjects = '';
         }
 
         function printAllFeeReminders() {
+            schoolInfo = JSON.parse(localStorage.getItem('schoolInfo')) || schoolInfo;
             const filterGrade = document.getElementById('filterReminderGrade')?.value || '';
             const filterBalance = document.getElementById('filterReminderBalance')?.value || '';
+            const messageTemplate = document.getElementById('reminderMessage')?.value || 'Dear Parent/Guardian, your child {student_name} has a fee balance of KES {balance}. Please clear the fees to avoid disruption of learning. Kindly contact the school office for payment options. Thank you.';
 
             let filteredFees = fees.filter(f => f.balance > 0);
 
@@ -6475,58 +6632,93 @@ let subjects = '';
                 return;
             }
 
-            let rows = '';
-            let totalBalance = 0;
-            filteredFees.forEach(fee => {
+            let remindersHTML = '';
+
+            filteredFees.forEach((fee, index) => {
                 const s = students.find(st => st.id == fee.studentId);
                 if (s) {
-                    totalBalance += fee.balance;
-                    rows += `
-                        <tr>
-                            <td>${s.name}</td>
-                            <td>Grade ${s.grade}</td>
-                            <td>${s.parent || '-'}</td>
-                            <td>${s.phone || '-'}</td>
-                            <td>KES ${fee.totalFee.toLocaleString()}</td>
-                            <td>KES ${fee.totalPaid.toLocaleString()}</td>
-                            <td style="font-weight:bold;">KES ${fee.balance.toLocaleString()}</td>
-                        </tr>
+                    const message = messageTemplate
+                        .replace('{student_name}', s.name)
+                        .replace('{balance}', fee.balance.toLocaleString())
+                        .replace('{total_fee}', fee.totalFee.toLocaleString())
+                        .replace('{paid}', fee.totalPaid.toLocaleString());
+
+                    const pageBreak = index > 0 ? 'page-break-before: always;' : '';
+                    
+                    remindersHTML += `
+                        <div style="border:2px solid #1e293b;padding:12px;border-radius:6px;max-width:100%;margin:0 auto;${pageBreak}">
+                            <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #dc2626;padding-bottom:6px;margin-bottom:8px;">
+                                ${getSchoolLogoHTML(35)}
+                                <div style="text-align:center;flex:1;padding:0 8px;">
+                                    <h1 style="margin:0;color:#0f172a;font-size:12px;font-weight:bold;">${schoolInfo.name}</h1>
+                                    <p style="margin:2px 0;color:#64748b;font-size:9px;">${schoolInfo.address}</p>
+                                </div>
+                                <div style="text-align:right;font-size:9px;">
+                                    <div style="font-weight:bold;color:#dc2626;">NOTICE</div>
+                                </div>
+                            </div>
+
+                            <div style="text-align:center;margin:6px 0;">
+                                <span style="background:#dc2626;color:white;padding:3px 10px;border-radius:3px;font-size:10px;font-weight:bold;">FEE REMINDER</span>
+                            </div>
+
+                            <div style="background:#fefce8;padding:8px;border-radius:4px;margin:8px 0;font-size:10px;border-left:3px solid #eab308;">
+                                <table style="width:100%;font-size:10px;">
+                                    <tr><td style="padding:2px;"><strong>Date:</strong></td><td style="padding:2px;text-align:right;">${new Date().toLocaleDateString()}</td></tr>
+                                    <tr><td style="padding:2px;"><strong>To:</strong></td><td style="padding:2px;text-align:right;">${s.parent || 'Parent/Guardian'}</td></tr>
+                                    <tr><td style="padding:2px;"><strong>Student:</strong></td><td style="padding:2px;text-align:right;"><strong>${s.name}</strong> (${s.admission})</td></tr>
+                                    <tr><td style="padding:2px;"><strong>Grade:</strong></td><td style="padding:2px;text-align:right;">Grade ${s.grade}</td></tr>
+                                </table>
+                            </div>
+
+                            <table style="width:100%;margin:8px 0;border-collapse:collapse;font-size:10px;">
+                                <tr><td style="padding:4px;border:1px solid #e2e8f0;">Total</td><td style="padding:4px;border:1px solid #e2e8f0;text-align:right;">${fee.totalFee.toLocaleString()}</td></tr>
+                                <tr><td style="padding:4px;border:1px solid #e2e8f0;">Paid</td><td style="padding:4px;border:1px solid #e2e8f0;text-align:right;color:#10b981;">${fee.totalPaid.toLocaleString()}</td></tr>
+                                <tr style="background:#fee2e2;"><td style="padding:5px;border:1px solid #e2e8f0;font-weight:bold;">BALANCE</td><td style="padding:5px;border:1px solid #e2e8f0;text-align:right;font-weight:bold;font-size:12px;color:#dc2626;">${fee.balance.toLocaleString()}</td></tr>
+                            </table>
+
+                            <div style="background:white;padding:8px;border:1px solid #1e293b;border-radius:4px;margin:8px 0;font-size:10px;">
+                                <strong>Dear Parent/Guardian,</strong>
+                                <p style="line-height:1.4;margin:4px 0;">${message}</p>
+                            </div>
+
+                            ${(schoolInfo.bankName || schoolInfo.mpesaPaybill || schoolInfo.airtelPaybill) ? `
+                            <div style="background:#ecfdf5;padding:6px;border-radius:4px;font-size:9px;border:1px solid #6ee7b7;">
+                                <strong style="color:#065f46;">Payment:</strong>
+                                ${schoolInfo.bankName ? ` ${schoolInfo.bankName}:${schoolInfo.bankAccount || ''}` : ''}
+                                ${schoolInfo.mpesaPaybill ? ` | M-PESA:${schoolInfo.mpesaPaybill}` : ''}
+                                ${schoolInfo.airtelPaybill ? ` | Airtel:${schoolInfo.airtelPaybill}` : ''}
+                            </div>
+                            ` : ''}
+
+                            <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:flex-end;font-size:9px;">
+                                <div style="text-align:center;flex:1;">
+                                    <div style="border-bottom:1px solid #64748b;margin-bottom:2px;min-height:15px;width:60%;">
+                                        ${getSignatureHTML('clerk', 50, 15)}
+                                    </div>
+                                    <div style="color:#64748b;">Administrator</div>
+                                </div>
+                                <div style="text-align:center;flex:1;">
+                                    <div style="border-bottom:1px solid #64748b;margin-bottom:2px;min-height:15px;width:60%;margin-left:auto;">
+                                        ${getSignatureHTML('principal', 50, 15)}
+                                    </div>
+                                    <div style="color:#64748b;">Principal</div>
+                                </div>
+                            </div>
+
+                            <div style="margin-top:6px;padding:5px;border:1px dashed #cbd5e1;border-radius:3px;font-size:9px;">
+                                <strong>Ack:</strong> Parent Sign: ____________ Date: ____________
+                            </div>
+
+                            <div style="text-align:center;margin-top:5px;color:#94a3b8;font-size:8px;">
+                                ${schoolInfo.motto}
+                            </div>
+                        </div>
                     `;
                 }
             });
 
-            const content = `
-                <div style="padding:20px;">
-                    <div style="text-align:center;margin-bottom:20px;">
-                        ${getSchoolLogoHTML(60)}
-                        <h2>${schoolInfo.name}</h2>
-                        <p>${schoolInfo.address}</p>
-                    </div>
-                    <h3 style="text-align:center;background:#ef4444;color:white;padding:10px;border-radius:5px;">FEE REMINDERS LIST</h3>
-                    <p style="text-align:center;">Generated on: ${new Date().toLocaleDateString()}</p>
-                    <table style="width:100%;border-collapse:collapse;margin-top:20px;">
-                        <thead>
-                            <tr style="background:#f8fafc;">
-                                <th style="padding:10px;border:1px solid #ddd;text-align:left;">Student</th>
-                                <th style="padding:10px;border:1px solid #ddd;">Grade</th>
-                                <th style="padding:10px;border:1px solid #ddd;">Parent</th>
-                                <th style="padding:10px;border:1px solid #ddd;">Phone</th>
-                                <th style="padding:10px;border:1px solid #ddd;text-align:right;">Total Fee</th>
-                                <th style="padding:10px;border:1px solid #ddd;text-align:right;">Paid</th>
-                                <th style="padding:10px;border:1px solid #ddd;text-align:right;">Balance</th>
-                            </tr>
-                        </thead>
-                        <tbody>${rows}</tbody>
-                        <tfoot>
-                            <tr style="background:#fef2f2;font-weight:bold;">
-                                <td colspan="6" style="padding:10px;border:1px solid #ddd;text-align:right;">TOTAL BALANCE:</td>
-                                <td style="padding:10px;border:1px solid #ddd;text-align:right;font-size:1.1rem;">KES ${totalBalance.toLocaleString()}</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                    <p style="text-align:center;margin-top:30px;"><em>${schoolInfo.motto}</em></p>
-                </div>
-            `;
+            const content = remindersHTML;
             printContent(content);
         }
 
